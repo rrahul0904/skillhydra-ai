@@ -1,0 +1,8 @@
+{
+  "name": "@skillhydra/coder",
+  "version": "0.1.0",
+  "entry": "SKILL.md",
+  "compatibility": {
+    "tank": ["@uriva/p2b-coder"]
+  }
+}
