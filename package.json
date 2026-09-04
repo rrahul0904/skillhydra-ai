@@ -1,0 +1,23 @@
+{
+  "name": "skillhydra-ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @skillhydra/web",
+    "build": "npm run build --workspace @skillhydra/web",
+    "start": "npm run start --workspace @skillhydra/web",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "check": "npm test && npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
