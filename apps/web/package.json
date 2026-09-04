@@ -1,0 +1,27 @@
+{
+  "name": "@skillhydra/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@skillhydra/core": "0.1.0",
+    "@skillhydra/policy": "0.1.0",
+    "@skillhydra/runtime": "0.1.0",
+    "@skillhydra/sandbox": "0.1.0",
+    "@skillhydra/skill-kit": "0.1.0",
+    "lucide-react": "^0.468.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.2"
+  }
+}
