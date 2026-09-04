@@ -1,0 +1,10 @@
+{
+  "name": "@skillhydra/policy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@skillhydra/core": "0.1.0"
+  }
+}
