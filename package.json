@@ -1,6 +1,6 @@
 {
   "name": "skillhydra-ai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -12,7 +12,8 @@
     "build": "npm run build --workspace @skillhydra/web",
     "start": "npm run start --workspace @skillhydra/web",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "check": "npm test && npm run build"
+    "check": "npm test && npm run build",
+    "db:migrate": "node --experimental-strip-types packages/db/scripts/migrate.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.2"
