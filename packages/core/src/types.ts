@@ -3,10 +3,7 @@ export type PolicyDecision = "allow" | "approval_required" | "deny";
 
 export interface SkillPermissions {
   network: string[];
-  filesystem: {
-    read: string[];
-    write: string[];
-  };
+  filesystem: { read: string[]; write: string[] };
   subprocess: boolean;
   browser: boolean;
   deploy: boolean;
@@ -58,6 +55,13 @@ export interface RunStep {
   detail?: string;
 }
 
+export interface ModelUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+}
+
 export interface AgentRun {
   id: string;
   skill: string;
@@ -67,4 +71,6 @@ export interface AgentRun {
   steps: RunStep[];
   toolRequest?: ToolRequest;
   policyDecision?: PolicyDecision;
+  model?: string;
+  usage?: ModelUsage;
 }
