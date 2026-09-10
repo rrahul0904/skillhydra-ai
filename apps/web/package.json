@@ -1,6 +1,6 @@
 {
   "name": "@skillhydra/web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@skillhydra/core": "0.1.0",
+    "@skillhydra/db": "0.2.0",
     "@skillhydra/policy": "0.1.0",
     "@skillhydra/runtime": "0.1.0",
     "@skillhydra/sandbox": "0.1.0",

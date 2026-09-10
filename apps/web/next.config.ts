@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: [
     "@skillhydra/core",
+    "@skillhydra/db",
     "@skillhydra/skill-kit",
     "@skillhydra/policy",
     "@skillhydra/runtime",
