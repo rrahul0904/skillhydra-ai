@@ -1,20 +1,93 @@
-import { NextResponse } from "next/server";
+import { getControlPlaneStore } from "@skillhydra/db";
 import { resolveSkill } from "@skillhydra/skill-kit";
 import { AgentRuntime, DemoAgentModel } from "@skillhydra/runtime";
 import { MockSandboxExecutor } from "@skillhydra/sandbox";
+import { getPrincipal, jsonError } from "../../../lib/auth";
+import { organizationForConversation, requireOrganizationRole } from "../../../lib/rbac";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { message?: string; source?: string };
-    if (!body.message?.trim()) return NextResponse.json({ error: "A message is required" }, { status: 400 });
+    const principal = getPrincipal(request);
+    const body = await request.json() as { message?: string; source?: string; conversationId?: string };
+    if (!body.message?.trim()) return Response.json({ error: "A message is required" }, { status: 400 });
+
+    const store = getControlPlaneStore();
+    let persistence:
+      | { organizationId: string; conversationId: string }
+      | undefined;
+
+    if (body.conversationId) {
+      const context = await organizationForConversation(store, body.conversationId);
+      await requireOrganizationRole(store, context.organizationId, principal.userId, "member");
+      persistence = { organizationId: context.organizationId, conversationId: body.conversationId };
+      await store.createMessage({ conversationId: body.conversationId, role: "user", content: body.message.trim() });
+    }
 
     const skill = await resolveSkill(body.source ?? "tank:@uriva/p2b-coder");
-    const runtime = new AgentRuntime(new DemoAgentModel(), new MockSandboxExecutor());
-    const run = await runtime.runTurn(skill.bundle, body.message);
-    return NextResponse.json({ run });
+    const agentRuntime = new AgentRuntime(new DemoAgentModel(), new MockSandboxExecutor());
+    const run = await agentRuntime.runTurn(skill.bundle, body.message);
+
+    let persistedRunId: string | undefined;
+    let approvalId: string | undefined;
+
+    if (persistence) {
+      const storedRun = await store.createRun({
+        conversationId: persistence.conversationId,
+        status: run.status,
+        model: "demo-deterministic",
+        completedAt: run.status === "completed" ? new Date().toISOString() : null,
+      });
+      persistedRunId = storedRun.id;
+
+      for (const step of run.steps) {
+        await store.createRunStep({
+          runId: storedRun.id,
+          kind: step.kind,
+          status: step.status,
+          payload: {
+            runtimeStepId: step.id,
+            title: step.title,
+            detail: step.detail ?? null,
+            tool: run.toolRequest?.tool ?? null,
+            policyDecision: run.policyDecision ?? null,
+          },
+        });
+      }
+
+      if (run.status === "waiting_approval" && run.toolRequest) {
+        const approval = await store.createApproval({
+          runId: storedRun.id,
+          toolName: run.toolRequest.tool,
+          request: run.toolRequest.input,
+        });
+        approvalId = approval.id;
+      }
+
+      await store.createMessage({
+        conversationId: persistence.conversationId,
+        role: "assistant",
+        content: run.response,
+      });
+
+      await store.appendAuditEvent({
+        organizationId: persistence.organizationId,
+        actorId: principal.userId,
+        action: "agent.run",
+        resourceType: "run",
+        resourceId: storedRun.id,
+        metadata: {
+          status: run.status,
+          skill: skill.bundle.manifest.name,
+          tool: run.toolRequest?.tool ?? null,
+          policyDecision: run.policyDecision ?? null,
+        },
+      });
+    }
+
+    return Response.json({ run, persistedRunId, approvalId });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Agent run failed" }, { status: 500 });
+    return jsonError(error);
   }
 }
