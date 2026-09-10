@@ -1,6 +1,6 @@
 import { getControlPlaneStore } from "@skillhydra/db";
 import { resolveSkill } from "@skillhydra/skill-kit";
-import { AgentRuntime, DemoAgentModel } from "@skillhydra/runtime";
+import { AgentRuntime, createConfiguredAgentModel } from "@skillhydra/runtime";
 import { MockSandboxExecutor } from "@skillhydra/sandbox";
 import { getPrincipal, jsonError } from "../../../lib/auth";
 import { organizationForConversation, requireOrganizationRole } from "../../../lib/rbac";
@@ -14,9 +14,7 @@ export async function POST(request: Request) {
     if (!body.message?.trim()) return Response.json({ error: "A message is required" }, { status: 400 });
 
     const store = getControlPlaneStore();
-    let persistence:
-      | { organizationId: string; conversationId: string }
-      | undefined;
+    let persistence: { organizationId: string; conversationId: string } | undefined;
 
     if (body.conversationId) {
       const context = await organizationForConversation(store, body.conversationId);
@@ -26,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     const skill = await resolveSkill(body.source ?? "tank:@uriva/p2b-coder");
-    const agentRuntime = new AgentRuntime(new DemoAgentModel(), new MockSandboxExecutor());
+    const agentRuntime = new AgentRuntime(createConfiguredAgentModel(), new MockSandboxExecutor());
     const run = await agentRuntime.runTurn(skill.bundle, body.message);
 
     let persistedRunId: string | undefined;
@@ -36,7 +34,10 @@ export async function POST(request: Request) {
       const storedRun = await store.createRun({
         conversationId: persistence.conversationId,
         status: run.status,
-        model: "demo-deterministic",
+        model: run.model ?? null,
+        inputTokens: run.usage?.inputTokens ?? 0,
+        outputTokens: run.usage?.outputTokens ?? 0,
+        estimatedCostUsd: run.usage?.estimatedCostUsd ?? 0,
         completedAt: run.status === "completed" ? new Date().toISOString() : null,
       });
       persistedRunId = storedRun.id;
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
             detail: step.detail ?? null,
             tool: run.toolRequest?.tool ?? null,
             policyDecision: run.policyDecision ?? null,
+            model: run.model ?? null,
           },
         });
       }
@@ -65,12 +67,7 @@ export async function POST(request: Request) {
         approvalId = approval.id;
       }
 
-      await store.createMessage({
-        conversationId: persistence.conversationId,
-        role: "assistant",
-        content: run.response,
-      });
-
+      await store.createMessage({ conversationId: persistence.conversationId, role: "assistant", content: run.response });
       await store.appendAuditEvent({
         organizationId: persistence.organizationId,
         actorId: principal.userId,
@@ -82,6 +79,10 @@ export async function POST(request: Request) {
           skill: skill.bundle.manifest.name,
           tool: run.toolRequest?.tool ?? null,
           policyDecision: run.policyDecision ?? null,
+          model: run.model ?? null,
+          inputTokens: run.usage?.inputTokens ?? 0,
+          outputTokens: run.usage?.outputTokens ?? 0,
+          estimatedCostUsd: run.usage?.estimatedCostUsd ?? 0,
         },
       });
     }

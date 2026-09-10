@@ -1,5 +1,5 @@
 import type { ModelUsage } from "@skillhydra/core";
-import type { AgentModel, ModelContext, ModelDecision } from "./model.ts";
+import { DemoAgentModel, type AgentModel, type ModelContext, type ModelDecision } from "./model.ts";
 
 type FetchLike = typeof fetch;
 
@@ -184,10 +184,7 @@ export class GatewayAgentModel implements AgentModel {
 export function createConfiguredAgentModel(): AgentModel {
   const apiKey = process.env.AI_GATEWAY_API_KEY ?? process.env.VERCEL_OIDC_TOKEN;
   const model = process.env.AI_MODEL;
-  if (!apiKey || !model) {
-    const { DemoAgentModel } = requireDemoModel();
-    return new DemoAgentModel();
-  }
+  if (!apiKey || !model) return new DemoAgentModel();
 
   return new GatewayAgentModel({
     apiKey,
@@ -197,21 +194,4 @@ export function createConfiguredAgentModel(): AgentModel {
     inputCostPerMillion: Number(process.env.AI_INPUT_COST_PER_MILLION ?? 0),
     outputCostPerMillion: Number(process.env.AI_OUTPUT_COST_PER_MILLION ?? 0),
   });
-}
-
-function requireDemoModel() {
-  return { DemoAgentModel: class {
-    async decide(message: string, context: ModelContext) {
-      if (context.history.length > 0) {
-        const last = context.history.at(-1)!;
-        return { model: "demo-deterministic", response: `Completed ${last.tool}. Result: ${JSON.stringify(last.output)}`, usage: { inputTokens:0, outputTokens:0, totalTokens:0, estimatedCostUsd:0 } };
-      }
-      const lower = message.toLowerCase();
-      if (lower.includes("deploy")) return { model:"demo-deterministic", response:"I prepared a preview deployment request. Because deployments cross the workspace boundary, the policy engine requires owner approval before execution.", tool:{name:"deploy.preview",input:{target:"preview",source:"workspace"}}, usage:{inputTokens:0,outputTokens:0,totalTokens:0,estimatedCostUsd:0} };
-      if (lower.includes("test") || lower.includes("build")) return { model:"demo-deterministic", response:"I can verify the workspace with the sandboxed test/build toolchain.", tool:{name:"shell.exec",input:{command:"npm test && npm run build"}}, usage:{inputTokens:0,outputTokens:0,totalTokens:0,estimatedCostUsd:0} };
-      if (lower.includes("edit") || lower.includes("change") || lower.includes("implement")) return { model:"demo-deterministic", response:"I can make the requested change inside the isolated workspace, then run verification before presenting the patch.", tool:{name:"repo.write",input:{intent:message}}, usage:{inputTokens:0,outputTokens:0,totalTokens:0,estimatedCostUsd:0} };
-      if (lower.includes("repo") || lower.includes("code") || lower.includes("inspect")) return { model:"demo-deterministic", response:"I’ll inspect the repository first so changes are grounded in the current codebase.", tool:{name:"repo.read",input:{path:"."}}, usage:{inputTokens:0,outputTokens:0,totalTokens:0,estimatedCostUsd:0} };
-      return { model:"demo-deterministic", response:"This specialist is hydrated with a constrained coding skill. Ask it to inspect code, implement a change, run tests, or prepare a preview deployment; each action is checked against the skill manifest before execution.", usage:{inputTokens:0,outputTokens:0,totalTokens:0,estimatedCostUsd:0} };
-    }
-  } };
 }
