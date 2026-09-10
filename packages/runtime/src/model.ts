@@ -53,8 +53,8 @@ export class DemoAgentModel implements AgentModel {
     if (lower.includes("edit") || lower.includes("change") || lower.includes("implement")) {
       return {
         model: "demo-deterministic",
-        response: "I can make the requested change inside the isolated workspace, then run verification before presenting the patch.",
-        tool: { name: "repo.write", input: { intent: message } },
+        response: "I can write a scoped implementation request into the isolated workspace, then verification can inspect and execute it.",
+        tool: { name: "repo.write", input: { path: "skillhydra-request.md", content: message } },
         usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostUsd: 0 },
       };
     }
