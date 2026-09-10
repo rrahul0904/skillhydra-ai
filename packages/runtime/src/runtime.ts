@@ -16,11 +16,15 @@ function addUsage(total: ModelUsage, next?: ModelUsage) {
 }
 
 export class AgentRuntime {
-  constructor(
-    private readonly model: AgentModel,
-    private readonly executor: SandboxExecutor,
-    private readonly maxToolSteps = 6,
-  ) {}
+  private readonly model: AgentModel;
+  private readonly executor: SandboxExecutor;
+  private readonly maxToolSteps: number;
+
+  constructor(model: AgentModel, executor: SandboxExecutor, maxToolSteps = 6) {
+    this.model = model;
+    this.executor = executor;
+    this.maxToolSteps = maxToolSteps;
+  }
 
   async runTurn(skill: SkillBundle, message: string): Promise<AgentRun> {
     const runId = makeId("run");
