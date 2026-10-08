@@ -12,6 +12,7 @@
     "@skillhydra/db": "0.2.0",
     "@skillhydra/policy": "0.1.0",
     "@skillhydra/registry": "0.1.0",
+    "@skillhydra/registry-store": "0.1.0",
     "@skillhydra/runtime": "0.1.0",
     "@skillhydra/sandbox": "0.1.0",
     "@skillhydra/skill-kit": "0.1.0",
