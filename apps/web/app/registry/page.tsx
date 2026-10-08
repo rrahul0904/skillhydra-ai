@@ -54,6 +54,7 @@ export default async function RegistryPage({
         <p>
           Search portable skills and packs by capability, target agent and review status. A verified publisher is not the same thing as reviewed code, and discovery never grants permission to install or execute anything.
         </p>
+        <div><Link className="btn btn-primary" href="/registry/inspect">Inspect a public GitHub skill</Link></div>
       </header>
 
       <section className="registry-toolbar panel" aria-label="Registry filters">
