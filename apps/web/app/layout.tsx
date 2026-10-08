@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Braces } from "lucide-react";
 import "./globals.css";
+import "./registry.css";
 
 export const metadata: Metadata = {
   title: "SkillHydra AI — Portable skills, isolated agents",
