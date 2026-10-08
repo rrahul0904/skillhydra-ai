@@ -35,7 +35,11 @@ export async function PATCH(request: Request) {
   if (typeof body.id !== "string" || body.id.length > 100) return NextResponse.json({ error: "id is required" }, { status: 400 });
   if (typeof body.status !== "string" || !STATUSES.has(body.status as RegistrySubmissionStatus)) return NextResponse.json({ error: "status must be pending, approved or rejected" }, { status: 400 });
   const store = getRegistrySubmissionStore();
+  const existing = await store.get(body.id);
+  if (!existing) return NextResponse.json({ error: "submission not found" }, { status: 404 });
+  if (body.status === "approved" && existing.scanStatus === "blocked") {
+    return NextResponse.json({ error: "blocked static scans cannot be approved; submit changed source and obtain a new receipt" }, { status: 409 });
+  }
   const updated = await store.setStatus(body.id, body.status as RegistrySubmissionStatus);
-  if (!updated) return NextResponse.json({ error: "submission not found" }, { status: 404 });
   return NextResponse.json({ data: updated, meta: { durability: store.mode } });
 }
