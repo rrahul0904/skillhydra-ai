@@ -19,6 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               SkillHydra
             </Link>
             <div className="nav-links">
+              <Link href="/registry" className="nav-link">Registry</Link>
               <Link href="/talk-to-skill" className="nav-link">Talk to Skill</Link>
               <Link href="/dashboard" className="nav-link hide-mobile">Control Plane</Link>
               <Link href="/architecture" className="nav-link hide-mobile">Architecture</Link>
