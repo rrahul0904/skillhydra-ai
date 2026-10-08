@@ -13,7 +13,8 @@
     "start": "npm run start --workspace @skillhydra/web",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "check": "npm test && npm run build",
-    "db:migrate": "node --experimental-strip-types packages/db/scripts/migrate.ts"
+    "db:migrate": "node --experimental-strip-types packages/db/scripts/migrate.ts",
+    "registry:cli": "node --experimental-strip-types packages/registry-cli/src/cli.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

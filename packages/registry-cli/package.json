@@ -1,0 +1,12 @@
+{
+  "name": "@skillhydra/registry-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "skillhydra-registry": "./src/cli.ts"
+  },
+  "dependencies": {
+    "@skillhydra/registry": "0.1.0"
+  }
+}
