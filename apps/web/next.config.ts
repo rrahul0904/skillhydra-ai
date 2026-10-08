@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "@skillhydra/db",
     "@skillhydra/skill-kit",
     "@skillhydra/policy",
+    "@skillhydra/registry",
     "@skillhydra/runtime",
     "@skillhydra/sandbox",
   ],
